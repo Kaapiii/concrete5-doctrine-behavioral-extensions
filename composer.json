@@ -1,0 +1,19 @@
+{
+    "name": "kaapiii/concrete5-doctrine-behavioral-extensions",
+    "description": "Package adds Doctrine2 behavioral extensions to concrete5",
+    "license": "MIT",
+    "type": "concrete5-package",
+    "authors": [
+        {
+            "name": "Markus Liechti",
+            "email": "markus@liechti.io"
+        }
+    ],
+    "config": {
+        "vendor-dir":"doctrine_behavioral_extensions/vendor"
+    },
+    "require": {
+        "composer/installers": "~1.0",
+        "gedmo/doctrine-extensions": "2.4.*"
+    }
+}
