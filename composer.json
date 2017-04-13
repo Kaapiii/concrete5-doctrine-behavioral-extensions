@@ -10,7 +10,7 @@
         }
     ],
     "config": {
-        "vendor-dir":"doctrine_behavioral_extensions/vendor"
+        "vendor-dir":"vendor"
     },
     "require": {
         "composer/installers": "~1.0",

@@ -1,6 +1,6 @@
 <?php
 
-namespace Concrete\Package\DoctrineBehavioralExtensions\Controller\SinglePage\Dashboard\System;
+namespace Concrete\Package\Concrete5DoctrineBehavioralExtensions\Controller\SinglePage\Dashboard\System;
 
 use Concrete\Core\Package\Package;
 
@@ -24,7 +24,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
      */
     public function __construct(\Concrete\Core\Page\Page $c) {
         parent::__construct($c);
-        $this->package = Package::getByHandle('doctrine_behavioral_extensions');
+        $this->package = Package::getByHandle('concrete5_doctrine_behavioral_extensions');
     }
     
     /**
@@ -33,7 +33,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
     public function view(){
         
         
-        $package = Package::getByHandle('doctrine_behavioral_extensions');
+        $package = Package::getByHandle('concrete5_doctrine_behavioral_extensions');
         $config = $package->getFileConfig();
         
         $this->set('config', $config);
@@ -85,7 +85,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
         } else {
             $this->set('error', array($this->token->getErrorMessage()));
         }
-        $this->redirect('/dashboard/system/doctrine_extensions/behavioral', 'view');
+        $this->redirect('/dashboard/system/doctrine_behavioral_extensions');
     }
     
     /**

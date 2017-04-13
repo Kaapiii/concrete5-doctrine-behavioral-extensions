@@ -1,6 +1,6 @@
 <?php
 
-namespace Concrete\Package\DoctrineBehavioralExtensions;
+namespace Concrete\Package\Concrete5DoctrineBehavioralExtensions;
 
 use Concrete\Core\Localization\Localization;
 use Concrete\Core\Multilingual\Page\Section\Section;
@@ -22,9 +22,9 @@ class Controller extends \Concrete\Core\Package\Package
     
     const CUSTOM_NAMESPACE = '\Kaapiii\Doctrine\BehavioralExtensions';
     
-    protected $pkgHandle          = 'doctrine_behavioral_extensions';
+    protected $pkgHandle          = 'concrete5_doctrine_behavioral_extensions';
     protected $appVersionRequired = '8.0.0';
-    protected $pkgVersion         = '0.0.1';
+    protected $pkgVersion         = '0.2.0';
     
     /**
      * Register the custom namespace
