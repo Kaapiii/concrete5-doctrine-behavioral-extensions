@@ -54,21 +54,13 @@ class Controller extends \Concrete\Core\Package\Package
 
     public function on_start()
     {
-        // register the autoloading
-        require $this->getPackagePath() . '/vendor/autoload.php';
-
-//        \Events::addListener('on_entity_manager_configure', function($event) {
-//            
-//            
-//            // event contains the following Objects connection (database connection Object), configuration (ORM config Object), eventManager (ORM Event Manager)
-//            $config = $event->getArgument('configuration');
-//            $connection = $event->getArgument('connection');
-//            $evm = $event->getArgument('eventManager');
-//            
-//            $cachedAnnotationReader = $this->app->make('orm/cachedAnnotationReader');
-//
-//            //$this->registerDoctrineBehavioralExtensions($evm, $cachedAnnotationReader);
-//        });
+        // Register the autoloading
+        // Note: By wrapping the autoloader include call in a file_exists 
+        // function, the package installation will also work by adding it to
+        // the projects composer.json
+        if(file_exists($this->getPackagePath() . '/vendor/autoload.php')){
+            require $this->getPackagePath() . '/vendor/autoload.php';
+        }
         
         $em = $this->app->make('Doctrine\ORM\EntityManager');
         $evm = $em->getEventManager();
