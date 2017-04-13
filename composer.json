@@ -10,7 +10,7 @@
         }
     ],
     "config": {
-        "vendor-dir":"vendor"
+        "vendor-dir":"./vendor"
     },
     "require": {
         "composer/installers": "~1.0",
