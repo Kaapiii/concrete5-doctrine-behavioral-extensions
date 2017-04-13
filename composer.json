@@ -1,5 +1,5 @@
 {
-    "name": "kaapiii/concrete5-doctrine-behavioral-extensions",
+    "name": "kaapiii/concrete5_doctrine_behavioral_extensions",
     "description": "Package adds Doctrine2 behavioral extensions to concrete5",
     "license": "MIT",
     "type": "concrete5-package",
