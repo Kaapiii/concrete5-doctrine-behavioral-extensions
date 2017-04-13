@@ -9,9 +9,6 @@
             "email": "markus@liechti.io"
         }
     ],
-    "config": {
-        "vendor-dir":"vendor"
-    },
     "require": {
         "composer/installers": "~1.0",
         "gedmo/doctrine-extensions": "2.4.*"
