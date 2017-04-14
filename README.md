@@ -15,14 +15,21 @@ Installation
 4. Install the package
 5. Navigate to **System & Settings -> Doctrine Behavioral Extensions** to see and activate the available extensions.
 
-### Install the package with the projects composer.json file
+#### Attention:
+If you decide to install the package manually, you should install all packages which depend on its functionality, after you first installed this package. The reason is, that concrete5 loads the active packages in the same order they were installed.
+
+### Install the package with the projects composer.json file (since v 0.2)
 
 1. Add the following line to line to the 'require' section of the concrete5 composer.json.
-```
 
-"kaapiii/concrete5_doctrine_behavioral_extensions": "^0.2"
+        "kaapiii/concrete5_doctrine_behavioral_extensions": "^0.2"
 
-```
-2. Run 'composer install' from the installation {root}
+2. Run the following command from the installation {root} folder
+
+        composer install
+
 3. Install the package
 4. Navigate to **System & Settings -> Doctrine Behavioral Extensions** to see and activate the available extensions.
+
+#### Note:
+With this installation method, the installation order of the packages doesn't matter. All third party dependencies are installed in {root}/concrete/vendor and therefore loaded before the packages are initiated.
