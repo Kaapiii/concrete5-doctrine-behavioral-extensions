@@ -6,7 +6,7 @@ Installation
 
 ### Install the package manually
 
-1. Donload the zip and the folder **concrete5_doctrine_behavioral_extensions-xxx** to {root}/packages
+1. Download the zip and the folder **concrete5_doctrine_behavioral_extensions-xxx** to {root}/packages
 2. Rename the folder to **concrete5_doctrine_behavioral_extensions-xxx**
 2. Use [Composer](https://getcomposer.org/) to install the third party dependencies
 
