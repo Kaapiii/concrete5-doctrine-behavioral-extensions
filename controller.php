@@ -125,14 +125,11 @@ class Controller extends \Concrete\Core\Package\Package
             $evm->addEventSubscriber($blameableListener);
         }
 
-        /**
-         * @todo -> check if we want add the locale or just go with the language
-         */
         // Translatable
         if($config->get('settings.translatable.active')){
-            $defaultLocale = $this->getSiteConfig()->get('multilingual.default_source_locale'); // -> example "de_DE"
+            $defaultSourceLocale = $this->getSiteConfig()->get('multilingual.default_source_locale'); // -> example "de_DE"
             
-            $defaultLocale = substr($defaultLocale, 0, 2);
+            $defaultLocale = substr($defaultSourceLocale, 0, 2);
             if(!empty($defaultLocale)){
                 // Translatable
                 $translatableListener = new TranslatableListener();
@@ -142,7 +139,6 @@ class Controller extends \Concrete\Core\Package\Package
 
                 $ms = Section::getCurrentSection();
                 if(is_object($ms)){
-                    //$locale = $ms->getLocale();
                     $language = $ms->getLanguage();
                     $translatableListener->setTranslatableLocale($language);
                 }else{
