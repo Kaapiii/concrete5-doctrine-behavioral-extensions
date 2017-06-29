@@ -7,7 +7,8 @@ use Concrete\Core\Package\Package;
 /**
  * Behavioral settings controller
  *
- * @author markus.liechti
+ * @author Markus Liechti <markus@liechti.io>
+ * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\DashboardSitePageController{
     

@@ -16,7 +16,12 @@ use Gedmo\Translatable\TranslatableListener;
 use Gedmo\Tree\TreeListener;
 use Gedmo\Timestampable\TimestampableListener;
 
-
+/**
+ * Package controller
+ *
+ * @author Markus Liechti <markus@liechti.io>
+ * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
+ */
 class Controller extends \Concrete\Core\Package\Package
 {   
     
