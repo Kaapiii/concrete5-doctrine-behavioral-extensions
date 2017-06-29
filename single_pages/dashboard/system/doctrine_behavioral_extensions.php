@@ -168,5 +168,4 @@
             <button class="pull-right btn btn-primary" type="submit" ><?= t('Save') ?></button>
         </div>
     </div>
-
 </form>

@@ -29,7 +29,7 @@ class Controller extends \Concrete\Core\Package\Package
     
     protected $pkgHandle          = 'concrete5_doctrine_behavioral_extensions';
     protected $appVersionRequired = '8.0.0';
-    protected $pkgVersion         = '0.2.0';
+    protected $pkgVersion         = '0.3.0';
     
     /**
      * Register the custom namespace
@@ -132,18 +132,13 @@ class Controller extends \Concrete\Core\Package\Package
         if($config->get('settings.translatable.active')){
             $defaultLocale = $this->getSiteConfig()->get('multilingual.default_source_locale'); // -> example "de_DE"
             
-            // @todo - create setting
             $defaultLocale = substr($defaultLocale, 0, 2);
-//            var_dump($defaultLocale);
-//            die('ups');
             if(!empty($defaultLocale)){
                 // Translatable
                 $translatableListener = new TranslatableListener();
                 $translatableListener->setAnnotationReader($cachedAnnotationReader);
-                //$translatableListener->setTranslatableLocale($locale);
                 $translatableListener->setDefaultLocale($defaultLocale);
                 $translatableListener->setTranslationFallback(false);
-                //$translatableListener->setPersistDefaultLocaleTranslation(false);
 
                 $ms = Section::getCurrentSection();
                 if(is_object($ms)){
