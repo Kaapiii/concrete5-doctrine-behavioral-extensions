@@ -3,6 +3,7 @@
 namespace Concrete\Package\Concrete5DoctrineBehavioralExtensions\Controller\SinglePage\Dashboard\System;
 
 use Concrete\Core\Package\Package;
+use TaskPermission;
 
 /**
  * Behavioral settings controller
@@ -33,6 +34,11 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
      */
     public function view(){
         
+        $tp = new TaskPermission();
+        $canInstallPackages = $tp->canInstallPackages();
+        if (!$canInstallPackages){
+            $this->error->add(t('You do not have permission to edit this package settings. In order to alter the settings you need to have permission to install add-ons.'));
+        }
         
         $package = Package::getByHandle('concrete5_doctrine_behavioral_extensions');
         $config = $package->getFileConfig();
@@ -51,6 +57,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
         $this->set('listenersPerBehavoir', $listenersPerBehavoir);
         $this->set('ormEventsElementPath', $ormEventsElementPath);
         $this->set('defaultLanguageFalse', $multilingualConfig ? $multilingualConfig : false);
+        $this->set('canInstallPackages', $canInstallPackages);
     }
     
     /**

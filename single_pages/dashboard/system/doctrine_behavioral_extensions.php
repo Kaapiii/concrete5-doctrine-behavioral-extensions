@@ -1,5 +1,6 @@
 <?php defined('C5_EXECUTE') or die("Access Denied."); ?>
 
+<?php if($canInstallPackages): ?>
 <form method="post" class="ccm-dashboard-content-form" action="<?= $controller->action('updateSettings') ?>">
     <?= $this->controller->token->output('behavioral') ?>
 
@@ -169,3 +170,4 @@
         </div>
     </div>
 </form>
+<?php endif; ?>
