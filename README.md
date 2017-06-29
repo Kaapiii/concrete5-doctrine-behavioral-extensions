@@ -1,3 +1,5 @@
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42/big.png)](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42)
+
 Concrete5 package for v8 - Package adds Doctrine2 behavioral extensions to concrete5 (work in progress)
 ======
 
