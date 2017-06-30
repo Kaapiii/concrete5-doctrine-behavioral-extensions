@@ -8,6 +8,7 @@ use Concrete\Core\User\User;
 use Concrete\Core\Http\Request;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
+use Gedmo\DoctrineExtensions;
 use Gedmo\Blameable\BlameableListener;
 use Gedmo\Loggable\LoggableListener;
 use Gedmo\Sluggable\SluggableListener;
@@ -29,7 +30,7 @@ class Controller extends \Concrete\Core\Package\Package
     
     protected $pkgHandle          = 'concrete5_doctrine_behavioral_extensions';
     protected $appVersionRequired = '8.0.0';
-    protected $pkgVersion         = '0.4.0';
+    protected $pkgVersion         = '0.5.0';
     
     /**
      * Register the custom namespace
@@ -83,7 +84,9 @@ class Controller extends \Concrete\Core\Package\Package
         $this->cachedAnnotationReader = $this->app->make('orm/cachedAnnotationReader');
         $this->config = $this->getFileConfig();
         $this->user = new User();
+        $driverChain = $this->em->getConfiguration()->getMetadataDriverImpl();
 
+        DoctrineExtensions::registerMappingIntoDriverChainORM($driverChain, $this->cachedAnnotationReader);
         $this->registerSortable();
         $this->registerSluggable();
         $this->registerTree();
