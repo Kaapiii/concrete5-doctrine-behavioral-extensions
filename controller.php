@@ -29,7 +29,7 @@ class Controller extends \Concrete\Core\Package\Package
     
     protected $pkgHandle          = 'concrete5_doctrine_behavioral_extensions';
     protected $appVersionRequired = '8.0.0';
-    protected $pkgVersion         = '0.3.0';
+    protected $pkgVersion         = '0.4.0';
     
     /**
      * Register the custom namespace
@@ -39,7 +39,7 @@ class Controller extends \Concrete\Core\Package\Package
     protected $pkgAutoloaderRegistries = array(
         'src/Kaapiii/Doctrine/BehavioralExtensions' => self::CUSTOM_NAMESPACE,
     );
-    
+
     
     public function getPackageDescription()
     {
@@ -67,11 +67,7 @@ class Controller extends \Concrete\Core\Package\Package
             require $this->getPackagePath() . '/vendor/autoload.php';
         }
         
-        $em = $this->app->make('Doctrine\ORM\EntityManager');
-        $evm = $em->getEventManager();
-        $cachedAnnotationReader = $this->app->make('orm/cachedAnnotationReader');
-
-        $this->registerDoctrineBehavioralExtensions($evm, $cachedAnnotationReader);
+        $this->registerDoctrineBehavioralExtensions();
     }
     
     /**
@@ -80,60 +76,89 @@ class Controller extends \Concrete\Core\Package\Package
      * @param EventManager $evm
      * @param Reader $cachedAnnotationReader
      */
-    public function registerDoctrineBehavioralExtensions(EventManager $evm, Reader $cachedAnnotationReader)
+    public function registerDoctrineBehavioralExtensions()
     {
-        
-        $config = $this->getFileConfig();
-        $user = new User();
-        
+        $this->em = $this->app->make('Doctrine\ORM\EntityManager');
+        $this->evm = $this->em->getEventManager();
+        $this->cachedAnnotationReader = $this->app->make('orm/cachedAnnotationReader');
+        $this->config = $this->getFileConfig();
+        $this->user = new User();
+
+        $this->registerSortable();
+        $this->registerSluggable();
+        $this->registerTree();
+        $this->registerBlamable();
+        $this->registerTimestampable();
+        $this->registerTranslatable();
+        $this->registerLoggable();
+    }
+
+    protected function registerSortable(){
+        // Sortable
+        if($this->config->get('settings.sortable.active')){
+            $sortableListener = new SortableListener();
+            $sortableListener->setAnnotationReader($this->cachedAnnotationReader);
+            $this->evm->addEventSubscriber($sortableListener);
+        }
+    }
+
+    protected function registerSluggable(){
         // Sluggable
-        if($config->get('settings.sluggable.active')){
+        if($this->config->get('settings.sluggable.active')){
             $sluggableListener = new SluggableListener();
-            $sluggableListener->setAnnotationReader($cachedAnnotationReader);
+            $sluggableListener->setAnnotationReader($this->cachedAnnotationReader);
             // Register custom Sluggifiers (Replace Special Characters)
-            if($config->get('settings.sluggable.transliterator')){
-                $callable = $config->get('settings.sluggable.transliterator');
+            if($this->config->get('settings.sluggable.transliterator')){
+                $callable = $this->config->get('settings.sluggable.transliterator');
             }else{
                 $callable = array('\Kaapiii\Doctrine\BehavioralExtensions\Translatable\Transliterator', 'replaceSecialSigns');
             }
-            
-            $sluggableListener->setTransliterator($callable);
-            $evm->addEventSubscriber($sluggableListener);
-        }
-        
-        // Tree
-        if($config->get('settings.tree.active')){
-            $treeListener = new TreeListener();
-            $treeListener->setAnnotationReader($cachedAnnotationReader);
-            $evm->addEventSubscriber($treeListener);
-        }
-        
-        // Timestampable
-        if($config->get('settings.timestampable.active')){
-            $timestampableListener = new TimestampableListener();
-            $timestampableListener->setAnnotationReader($cachedAnnotationReader);
-            $evm->addEventSubscriber($timestampableListener);
-        }
-        
-        // Blameable
-        if($config->get('settings.blameable.active') && is_object($user)){
-            $blameableListener = new BlameableListener();
-            $blameableListener->setAnnotationReader($cachedAnnotationReader);
-            if($user){
-                $blameableListener->setUserValue($user->getUserID());
-            }
-            $evm->addEventSubscriber($blameableListener);
-        }
 
-        // Translatable
-        if($config->get('settings.translatable.active')){
+            $sluggableListener->setTransliterator($callable);
+            $this->evm->addEventSubscriber($sluggableListener);
+        }
+    }
+
+    protected function registerTree(){
+        // Tree
+        if($this->config->get('settings.tree.active')){
+            $treeListener = new TreeListener();
+            $treeListener->setAnnotationReader($this->cachedAnnotationReader);
+            $this->evm->addEventSubscriber($treeListener);
+        }
+    }
+
+    protected function registerTimestampable(){
+        // Timestampable
+        if($this->config->get('settings.timestampable.active')){
+            $timestampableListener = new TimestampableListener();
+            $timestampableListener->setAnnotationReader($this->cachedAnnotationReader);
+            $this->evm->addEventSubscriber($timestampableListener);
+        }
+    }
+
+    protected function registerBlamable(){
+        // Blameable
+        if($this->config->get('settings.blameable.active') && is_object($this->user)){
+            $blameableListener = new BlameableListener();
+            $blameableListener->setAnnotationReader($this->cachedAnnotationReader);
+            if($this->user){
+                $blameableListener->setUserValue($this->user->getUserID());
+            }
+            $this->evm->addEventSubscriber($blameableListener);
+        }
+    }
+
+    protected function registerTranslatable()
+    {
+        if($this->config->get('settings.translatable.active')){
             $defaultSourceLocale = $this->getSiteConfig()->get('multilingual.default_source_locale'); // -> example "de_DE"
-            
+
             $defaultLocale = substr($defaultSourceLocale, 0, 2);
             if(!empty($defaultLocale)){
                 // Translatable
                 $translatableListener = new TranslatableListener();
-                $translatableListener->setAnnotationReader($cachedAnnotationReader);
+                $translatableListener->setAnnotationReader($this->cachedAnnotationReader);
                 $translatableListener->setDefaultLocale($defaultLocale);
                 $translatableListener->setTranslationFallback(false);
 
@@ -155,30 +180,25 @@ class Controller extends \Concrete\Core\Package\Package
                         $translatableListener->setTranslatableLocale($fallbackLanguage);
                     }
                 }
-                $evm->addEventSubscriber($translatableListener);
+                $this->evm->addEventSubscriber($translatableListener);
             }
         }
-        
+    }
+
+    protected function registerLoggable(){
         // Loggable
-        if($config->get('settings.loggable.active')){
+        if($this->config->get('settings.loggable.active')){
             $loggableListener = new LoggableListener;
-            $loggableListener->setAnnotationReader($cachedAnnotationReader);
-            if($user){
+            $loggableListener->setAnnotationReader($this->cachedAnnotationReader);
+            if($this->user){
                 // if not the user is not logged in, a empty user object is retured.
-                $username = $user->getUserName() === NULL ? '' : $user->getUserName();
+                $username = $this->user->getUserName() === NULL ? '' : $this->user->getUserName();
                 $loggableListener->setUsername($username);
             }
-            $evm->addEventSubscriber($loggableListener);
+            $this->evm->addEventSubscriber($loggableListener);
         }
-        
-        // Sortable
-        if($config->get('settings.sortable.active')){
-            $sortableListener = new SortableListener();
-            $sortableListener->setAnnotationReader($cachedAnnotationReader);
-            $evm->addEventSubscriber($sortableListener);
-        }      
     }
-    
+
     protected function getSiteConfig(){
         $site = $this->app->make('site')->getActiveSiteForEditing();
         return $site->getConfigRepository();
