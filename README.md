@@ -1,4 +1,4 @@
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42/big.png)](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42/mini.png)](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42)
 
 Concrete5 package for v8 - Package adds Doctrine2 behavioral extensions to concrete5 (work in progress)
 ======
@@ -9,7 +9,7 @@ Installation
 ### Install the package manually
 
 1. Download the zip and the folder **concrete5_doctrine_behavioral_extensions-xxx** to {root}/packages
-2. Rename the folder to **concrete5_doctrine_behavioral_extensions-xxx**
+2. Rename the folder to **concrete5_doctrine_behavioral_extensions**
 2. Use [Composer](https://getcomposer.org/) to install the third party dependencies
 
         composer install
