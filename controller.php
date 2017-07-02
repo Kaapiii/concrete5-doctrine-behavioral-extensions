@@ -6,6 +6,7 @@ use Concrete\Core\Localization\Localization;
 use Concrete\Core\Multilingual\Page\Section\Section;
 use Concrete\Core\User\User;
 use Concrete\Core\Http\Request;
+use Concrete\Core\Support\Facade\Events;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
 use Gedmo\DoctrineExtensions;
@@ -33,6 +34,31 @@ class Controller extends \Concrete\Core\Package\Package
     protected $pkgVersion         = '0.5.0';
     
     /**
+     * @var \Doctrine\ORM\EntityManager 
+     */
+    protected $em;
+    
+    /**
+     * @var \Doctrine\Common\EventManager 
+     */
+    protected $evm;
+    
+    /**
+     * @var \Doctrine\Common\Annotations\CachedReader 
+     */
+    protected $cachedAnnotationReader;
+    
+    /**
+     * @var \Concrete\Core\Config\Repository\Liaison
+     */
+    protected $config;
+    
+    /**
+     * @var \Concrete\Core\User\User 
+     */
+    protected $user;
+    
+    /**
      * Register the custom namespace
      * 
      * @var array
@@ -54,21 +80,20 @@ class Controller extends \Concrete\Core\Package\Package
     
     public function install()
     {
+        $this->installBehavioralTables();
         $pkg = parent::install();
-         \Concrete\Core\Page\Single::add('/dashboard/system/doctrine_behavioral_extensions',$pkg);
+        \Concrete\Core\Page\Single::add('/dashboard/system/doctrine_behavioral_extensions',$pkg);
     }
 
     public function on_start()
     {
-        // Register the autoloading
-        // Note: By wrapping the autoloader include call in a file_exists 
-        // function, the package installation will also work by adding it to
-        // the projects composer.json
-        if(file_exists($this->getPackagePath() . '/vendor/autoload.php')){
-            require $this->getPackagePath() . '/vendor/autoload.php';
-        }
-        
         $this->registerDoctrineBehavioralExtensions();
+    }
+    
+    public function uninstall()
+    {
+        $this->registerDoctrineBehavioralExtensions();
+        parent::uninstall();
     }
     
     /**
@@ -78,7 +103,9 @@ class Controller extends \Concrete\Core\Package\Package
      * @param Reader $cachedAnnotationReader
      */
     public function registerDoctrineBehavioralExtensions()
-    {
+    {   
+        $this->registerPackageVendorAutoload();
+        
         $this->em = $this->app->make('Doctrine\ORM\EntityManager');
         $this->evm = $this->em->getEventManager();
         $this->cachedAnnotationReader = $this->app->make('orm/cachedAnnotationReader');
@@ -93,9 +120,57 @@ class Controller extends \Concrete\Core\Package\Package
         $this->registerBlamable();
         $this->registerTimestampable();
         $this->registerTranslatable();
-        $this->registerLoggable();
+        $this->registerLoggable();   
     }
+    
+    /**
+     * Register the autoloading
+     * Note: By wrapping the autoloader include call in a file_exists 
+     * function, the package installation will also work by adding it 
+     * to the projects composer.json
+     */
+    protected function registerPackageVendorAutoload(){
+        // Register the autoloading
+        // Note: By wrapping the autoloader include call in a file_exists 
+        // function, the package installation will also work by adding it to
+        // the projects composer.json
+        if(file_exists($this->getPackagePath() . '/vendor/autoload.php')){
+            require $this->getPackagePath() . '/vendor/autoload.php';
+        }
+    }
+    
+    /**
+     * Install tables
+     */
+    protected function installBehavioralTables(){
+        
+        $this->registerPackageVendorAutoload();
+        
+        $annotationReader = new \Doctrine\Common\Annotations\AnnotationReader();
+        $cachedAnnotationReader = new \Doctrine\Common\Annotations\CachedReader($annotationReader, new \Doctrine\Common\Cache\ArrayCache());
+        $driverChain = new \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain();
+        \Gedmo\DoctrineExtensions::registerMappingIntoDriverChainORM($driverChain, $cachedAnnotationReader);
+        
+        $connection = $this->app->make('Concrete\Core\Database\Connection\Connection');
+        $config = \Doctrine\ORM\Tools\Setup::createConfiguration(
+            \Concrete\Core\Support\Facade\Config::get('concrete.cache.doctrine_dev_mode'),
+            \Concrete\Core\Support\Facade\Config::get('database.proxy_classes'),
+            new \Doctrine\Common\Cache\ArrayCache()
+        );
+        $config->setMetadataDriverImpl($driverChain);
+        $em = \Doctrine\ORM\EntityManager::create($connection, $config);
+        
+        $structure = new \Concrete\Core\Database\DatabaseStructureManager($em);
+        $structure->installDatabase();
 
+        // Create or update entity proxies
+        $metadata = $em->getMetadataFactory()->getAllMetadata();
+        $em->getProxyFactory()->generateProxyClasses($metadata, $em->getConfiguration()->getProxyDir());
+    }
+    
+    /**
+     * Register sortable listener
+     */
     protected function registerSortable(){
         // Sortable
         if($this->config->get('settings.sortable.active')){
@@ -104,7 +179,10 @@ class Controller extends \Concrete\Core\Package\Package
             $this->evm->addEventSubscriber($sortableListener);
         }
     }
-
+    
+    /**
+     * Register sluggable listener
+     */
     protected function registerSluggable(){
         // Sluggable
         if($this->config->get('settings.sluggable.active')){
@@ -121,7 +199,10 @@ class Controller extends \Concrete\Core\Package\Package
             $this->evm->addEventSubscriber($sluggableListener);
         }
     }
-
+    
+    /**
+     * Register tree listener
+     */
     protected function registerTree(){
         // Tree
         if($this->config->get('settings.tree.active')){
@@ -130,7 +211,10 @@ class Controller extends \Concrete\Core\Package\Package
             $this->evm->addEventSubscriber($treeListener);
         }
     }
-
+    
+    /**
+     * Register timestampable listener
+     */
     protected function registerTimestampable(){
         // Timestampable
         if($this->config->get('settings.timestampable.active')){
@@ -139,7 +223,10 @@ class Controller extends \Concrete\Core\Package\Package
             $this->evm->addEventSubscriber($timestampableListener);
         }
     }
-
+    
+    /**
+     * Register blameable listener
+     */
     protected function registerBlamable(){
         // Blameable
         if($this->config->get('settings.blameable.active') && is_object($this->user)){
@@ -151,7 +238,10 @@ class Controller extends \Concrete\Core\Package\Package
             $this->evm->addEventSubscriber($blameableListener);
         }
     }
-
+    
+    /**
+     * Register translatable listener
+     */
     protected function registerTranslatable()
     {
         if($this->config->get('settings.translatable.active')){
@@ -187,7 +277,10 @@ class Controller extends \Concrete\Core\Package\Package
             }
         }
     }
-
+    
+    /**
+     * Register loggable listener
+     */
     protected function registerLoggable(){
         // Loggable
         if($this->config->get('settings.loggable.active')){
