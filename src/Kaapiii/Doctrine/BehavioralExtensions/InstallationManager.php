@@ -9,6 +9,7 @@ namespace Kaapiii\Doctrine\BehavioralExtensions;
 \Doctrine\Common\Cache\ArrayCache;
 \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
 \Doctrine\ORM\EntityManager;
+\Doctrine\ORM\EntityManagerInterface;
 \Doctrine\ORM\Tools\Setup;
 \Gedmo\DoctrineExtensions;
 
@@ -22,20 +23,32 @@ class InstallationManager
 {
 
     public function installComponents()
+    {   
+        $this->registerPackageVendorAutoload();
+        
+        $em = $this->getEntityManagerForInstallation();
+        $this->installBehavioralTables($em);
+        $this->generateProxyClasses($em);
+        
+    }
+     
+    public function uninstallComponents()
     {
         
     }
-
+    
     /**
+     * Get EntityManager which contains only the gedmo mapping information
      * 
+     * @return \Doctrine\ORM\EntityManager
      */
-    protected function installBehavioralTables()
+    protected function getEntityManagerForInstallation()
     {
+        //$this->registerPackageVendorAutoload();
 
-        $this->registerPackageVendorAutoload();
-
-        // Create new EntityManager which contains only the
-        //mapping informations of the Doctrine Behavioral Extension
+        // Create new temporary EntityManager which contains only the
+        // mapping informations of the Doctrine Behavioral Extension. 
+        // It's used only during the installation.
         $annotationReader = new AnnotationReader();
         $cachedAnnotationReader = new CachedReader($annotationReader, new \Doctrine\Common\Cache\ArrayCache());
         $driverChain = new MappingDriverChain();
@@ -47,13 +60,18 @@ class InstallationManager
         );
         $config->setMetadataDriverImpl($driverChain);
         $em = EntityManager::create($connection, $config);
+        
+        return $em;
+    }
 
+    /**
+     * Create tables according to the entity managers metadata
+     */
+    protected function installBehavioralTables(EntityManagerInterface $em)
+    {
         // Create tables
         $structure = new DatabaseStructureManager($em);
         $structure->installDatabase();
-
-        // Create proxies
-        $this->generateProxyClasses($em);
     }
 
     /**
@@ -61,15 +79,10 @@ class InstallationManager
      * 
      * @param \Doctrine\ORM\EntityManager $em
      */
-    protected function generateProxyClasses($em)
+    protected function generateProxyClasses(EntityManagerInterface $em)
     {
         $metadata = $em->getMetadataFactory()->getAllMetadata();
         $em->getProxyFactory()->generateProxyClasses($metadata, $em->getConfiguration()->getProxyDir());
-    }
-
-    public function uninstallComponents()
-    {
-        
     }
 
     /**
@@ -79,7 +92,7 @@ class InstallationManager
     {
         
     }
-    
+
     /**
      * Delete related proxies
      */
@@ -87,5 +100,4 @@ class InstallationManager
     {
         
     }
-
 }
