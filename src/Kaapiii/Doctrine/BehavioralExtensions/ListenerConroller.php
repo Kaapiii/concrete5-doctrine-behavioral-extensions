@@ -2,11 +2,16 @@
 
 namespace Kaapiii\Doctrine\BehavioralExtensions;
 
+use Concrete\Core\Localization\Localization;
+use Concrete\Core\Multilingual\Page\Section\Section;
+use Concrete\Core\User\User;
+use Concrete\Core\Http\Request;
 use Concrete\Core\Application\ApplicationAwareInterface;
-use Concrete\Core\Application\ApplicationAwareTrait;
+use Concrete\Core\Application\Application;
 use Concrete\Core\Config\Repository\Liaison;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
+use Gedmo\DoctrineExtensions;
 use Gedmo\Blameable\BlameableListener;
 use Gedmo\Loggable\LoggableListener;
 use Gedmo\Sluggable\SluggableListener;
@@ -24,51 +29,55 @@ use Gedmo\Timestampable\TimestampableListener;
 class ListenerConroller implements ApplicationAwareInterface
 {
     
-    use ApplicationAwareTrait;
-    
     /**
      * @var $app
      */
     protected $app;
-    
+
     /**
-     * @var Doctrine\Common\EventManager
+     * @var \Doctrine\Common\EventManager
      */
     protected $evm;
-    
+
     /**
-     * @var Doctrine\Common\Annotations\CachedReader 
+     * @var \Doctrine\Common\Annotations\CachedReader 
      */
     protected $cachedAnnotaionReader;
-    
+
     /**
-     * @var Concrete\Core\Config\Repository\Liaison 
+     * @var \Concrete\Core\Config\Repository\Liaison 
      */
     protected $config;
-    
+
     /**
      *
-     * @var type 
+     * @var \Concrete\Core\User\User
      */
     protected $user;
-    
+
     /**
      * Constructor
      * 
      * @param ApplicationAwareInterface $app
      * @param Liaison $config
      */
-    public function __construct(ApplicationAwareInterface $app, $config)
-    {   
-        
+    public function __construct(Application $app, Liaison $config)
+    {
         $this->setApplication($app);
-        
-        $this->evm = $this->app->make('Doctrine\ORM\EntityManager');;
-        $this->cachedAnnotationReader = $this->app->make('orm/cachedAnnotationReader');;
         $this->config = $config;
-        $this->user = $user;
+        $this->user = new User();
     }
-
+    
+    /**
+     * Set application
+     * 
+     * @param Application $application
+     */
+    public function setApplication(Application $application)
+    {
+        $this->app = $application;
+    }
+    
     /**
      * Register Doctrine2 behavioral extensions
      *
@@ -77,10 +86,38 @@ class ListenerConroller implements ApplicationAwareInterface
      */
     public function registerDoctrineBehavioralExtensions()
     {
+        $this->em = $this->app->make('Doctrine\ORM\EntityManager');
+        $this->evm = $this->em->getEventManager();
+        $this->cachedAnnotationReader = $this->app->make('orm/cachedAnnotationReader');
+        $driverChain = $this->em->getConfiguration()->getMetadataDriverImpl();
 
-
+        DoctrineExtensions::registerMappingIntoDriverChainORM($driverChain, $this->cachedAnnotationReader);
+        
+        $this->registerSortable();
+        $this->registerSluggable();
+        $this->registerTree();
+        $this->registerBlamable();
+        $this->registerTimestampable();
+        $this->registerTranslatable();
+        $this->registerLoggable();
     }
 
+    /**
+     * Register sortable listener
+     */
+    protected function registerSortable()
+    {
+        // Sortable
+        if ($this->config->get('settings.sortable.active')) {
+            $sortableListener = new SortableListener();
+            $sortableListener->setAnnotationReader($this->cachedAnnotationReader);
+            $this->evm->addEventSubscriber($sortableListener);
+        }
+    }
+
+    /**
+     * Register sluggable listener
+     */
     protected function registerSluggable()
     {
         // Sluggable
@@ -99,8 +136,12 @@ class ListenerConroller implements ApplicationAwareInterface
         }
     }
 
+    /**
+     * Register tree listener
+     */
     protected function registerTree()
     {
+        // Tree
         if ($this->config->get('settings.tree.active')) {
             $treeListener = new TreeListener();
             $treeListener->setAnnotationReader($this->cachedAnnotationReader);
@@ -108,8 +149,12 @@ class ListenerConroller implements ApplicationAwareInterface
         }
     }
 
+    /**
+     * Register timestampable listener
+     */
     protected function registerTimestampable()
     {
+        // Timestampable
         if ($this->config->get('settings.timestampable.active')) {
             $timestampableListener = new TimestampableListener();
             $timestampableListener->setAnnotationReader($this->cachedAnnotationReader);
@@ -117,8 +162,12 @@ class ListenerConroller implements ApplicationAwareInterface
         }
     }
 
-    protected function registerBlameable()
+    /**
+     * Register blameable listener
+     */
+    protected function registerBlamable()
     {
+        // Blameable
         if ($this->config->get('settings.blameable.active') && is_object($this->user)) {
             $blameableListener = new BlameableListener();
             $blameableListener->setAnnotationReader($this->cachedAnnotationReader);
@@ -129,6 +178,9 @@ class ListenerConroller implements ApplicationAwareInterface
         }
     }
 
+    /**
+     * Register translatable listener
+     */
     protected function registerTranslatable()
     {
         if ($this->config->get('settings.translatable.active')) {
@@ -144,7 +196,6 @@ class ListenerConroller implements ApplicationAwareInterface
 
                 $ms = Section::getCurrentSection();
                 if (is_object($ms)) {
-                    // Check if the current language of the loaded page
                     $language = $ms->getLanguage();
                     $translatableListener->setTranslatableLocale($language);
                 } else {
@@ -166,8 +217,12 @@ class ListenerConroller implements ApplicationAwareInterface
         }
     }
 
+    /**
+     * Register loggable listener
+     */
     protected function registerLoggable()
     {
+        // Loggable
         if ($this->config->get('settings.loggable.active')) {
             $loggableListener = new LoggableListener;
             $loggableListener->setAnnotationReader($this->cachedAnnotationReader);
@@ -180,16 +235,13 @@ class ListenerConroller implements ApplicationAwareInterface
         }
     }
 
-    protected function registerSortable()
+    /**
+     * Return the site config repository
+     * 
+     * @return \Illuminate\Config\Repository
+     */
+    protected function getSiteConfig()
     {
-        if ($this->config->get('settings.sortable.active')) {
-            $sortableListener = new SortableListener();
-            $sortableListener->setAnnotationReader($this->cachedAnnotationReader);
-            $this->evm->addEventSubscriber($sortableListener);
-        }
-    }
-       
-    protected function getSiteConfig(){
         $site = $this->app->make('site')->getActiveSiteForEditing();
         return $site->getConfigRepository();
     }
