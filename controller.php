@@ -4,6 +4,7 @@ namespace Concrete\Package\Concrete5DoctrineBehavioralExtensions;
 
 use Concrete\Core\Package\Package;
 use Kaapiii\Doctrine\BehavioralExtensions\ListenerConroller;
+use Kaapiii\Doctrine\BehavioralExtensions\InstallationManager;
 
 /**
  * Package controller
@@ -54,7 +55,6 @@ class Controller extends Package
         'src/Kaapiii/Doctrine/BehavioralExtensions' => self::CUSTOM_NAMESPACE,
     );
 
-    
     public function getPackageDescription()
     {
         return t('Package add support for Doctrine2 behavioral extensions aka (Gedmo Extensions)');
@@ -68,7 +68,8 @@ class Controller extends Package
     public function install()
     {   
         $this->registerPackageVendorAutoload();
-        $this->installBehavioralTables();
+        $installationManager = new InstallationManager($this->app);
+        $installationManager->installComponents();
         $pkg = parent::install();
         \Concrete\Core\Page\Single::add('/dashboard/system/doctrine_behavioral_extensions',$pkg);
     }
@@ -83,7 +84,8 @@ class Controller extends Package
     public function uninstall()
     {   
         $this->registerPackageVendorAutoload();
-        $this->registerDoctrineBehavioralExtensions();
+        $installationManager = new InstallationManager($this->app);
+        $installationManager->uninstallComponents();
         parent::uninstall();
     }
      

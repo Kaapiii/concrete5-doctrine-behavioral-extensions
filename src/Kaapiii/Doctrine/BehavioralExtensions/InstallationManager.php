@@ -2,16 +2,19 @@
 
 namespace Kaapiii\Doctrine\BehavioralExtensions;
 
-\Concrete\Core\Database\DatabaseStructureManager;
-\Concrete\Core\Support\Facade\Config;
-\Doctrine\Common\Annotations\AnnotationReader;
-\Doctrine\Common\Annotations\CachedReader;
-\Doctrine\Common\Cache\ArrayCache;
-\Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
-\Doctrine\ORM\EntityManager;
-\Doctrine\ORM\EntityManagerInterface;
-\Doctrine\ORM\Tools\Setup;
-\Gedmo\DoctrineExtensions;
+use Concrete\Core\Application\ApplicationAwareInterface;
+use Concrete\Core\Application\Application;
+use Concrete\Core\Database\DatabaseStructureManager;
+use Concrete\Core\Support\Facade\Config;
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\CachedReader;
+use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Setup;
+use Doctrine\Common\Proxy\ProxyGenerator;
+use Gedmo\DoctrineExtensions;
 
 /**
  * Behavioral settings controller
@@ -19,22 +22,51 @@ namespace Kaapiii\Doctrine\BehavioralExtensions;
  * @author Markus Liechti <markus@liechti.io>
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-class InstallationManager
+class InstallationManager implements ApplicationAwareInterface
 {
-
+    
+    /**
+     * @var $app
+     */
+    protected $app;
+    
+    /**
+     * Constructor
+     * 
+     * @param Application $application
+     */
+    public function __construct(Application $application)
+    {
+        $this->setApplication($application);
+    }
+    
+    /**
+     * Set application
+     * 
+     * @param Application $application
+     */
+    public function setApplication(Application $application)
+    {
+        $this->app = $application;
+    }
+    
+    /**
+     * Install/create related components
+     */
     public function installComponents()
     {   
-        $this->registerPackageVendorAutoload();
-        
         $em = $this->getEntityManagerForInstallation();
         $this->installBehavioralTables($em);
         $this->generateProxyClasses($em);
-        
     }
      
+    /**
+     * Uninstall related components
+     */
     public function uninstallComponents()
     {
-        
+        $em = $this->getEntityManagerForInstallation();
+        $this->deleteProxies($em);
     }
     
     /**
@@ -48,7 +80,7 @@ class InstallationManager
 
         // Create new temporary EntityManager which contains only the
         // mapping informations of the Doctrine Behavioral Extension. 
-        // It's used only during the installation.
+        // It's used only for the table creation during the package installation.
         $annotationReader = new AnnotationReader();
         $cachedAnnotationReader = new CachedReader($annotationReader, new \Doctrine\Common\Cache\ArrayCache());
         $driverChain = new MappingDriverChain();
@@ -75,7 +107,7 @@ class InstallationManager
     }
 
     /**
-     * Generate proxies
+     * Generate proxies according to the entity managers metadata
      * 
      * @param \Doctrine\ORM\EntityManager $em
      */
@@ -86,18 +118,29 @@ class InstallationManager
     }
 
     /**
-     * Delete related tables if so is selected during the deinstallation
+     * Delete related tables, if so was selected during the deinstallation
      */
-    protected function deleteTables()
+    protected function deleteTables(EntityManagerInterface $em)
     {
         
     }
 
     /**
-     * Delete related proxies
+     * Delete package related proxies
+     * 
+     * @param EntityManagerInterface $em
      */
-    protected function deleteProxies()
+    protected function deleteProxies(EntityManagerInterface $em)
     {
-        
+        $config = $em->getConfiguration();
+        $proxyGenerator = new ProxyGenerator($config->getProxyDir(), $config->getProxyNamespace());
+
+        $classes = $em->getMetadataFactory()->getAllMetadata();
+        foreach ($classes as $class) {
+            $proxyFileName = $proxyGenerator->getProxyFileName($class->getName(), $config->getProxyDir());
+            if (file_exists($proxyFileName)) {
+                @unlink($proxyFileName);
+            }
+        }
     }
 }
