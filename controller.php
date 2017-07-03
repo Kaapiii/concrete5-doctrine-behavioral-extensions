@@ -22,31 +22,6 @@ class Controller extends Package
     protected $pkgVersion         = '0.5.0';
     
     /**
-     * @var \Doctrine\ORM\EntityManager 
-     */
-    protected $em;
-    
-    /**
-     * @var \Doctrine\Common\EventManager 
-     */
-    protected $evm;
-    
-    /**
-     * @var \Doctrine\Common\Annotations\CachedReader 
-     */
-    protected $cachedAnnotationReader;
-    
-    /**
-     * @var \Concrete\Core\Config\Repository\Liaison
-     */
-    protected $config;
-    
-    /**
-     * @var \Concrete\Core\User\User 
-     */
-    protected $user;
-    
-    /**
      * Register the custom namespace
      * 
      * @var array
