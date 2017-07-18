@@ -76,8 +76,6 @@ class InstallationManager implements ApplicationAwareInterface
      */
     protected function getEntityManagerForInstallation()
     {
-        //$this->registerPackageVendorAutoload();
-
         // Create new temporary EntityManager which contains only the
         // mapping informations of the Doctrine Behavioral Extension. 
         // It's used only for the table creation during the package installation.
