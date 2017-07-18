@@ -13,14 +13,13 @@ use Kaapiii\Doctrine\BehavioralExtensions\InstallationManager;
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 class Controller extends Package
-{   
-    
+{
     const CUSTOM_NAMESPACE = '\Kaapiii\Doctrine\BehavioralExtensions';
-    
+
     protected $pkgHandle          = 'concrete5_doctrine_behavioral_extensions';
     protected $appVersionRequired = '8.0.0';
     protected $pkgVersion         = '1.0.0';
-    
+
     /**
      * Register the custom namespace
      * 
@@ -39,40 +38,60 @@ class Controller extends Package
     {
         return t('Doctrine2 behavioral extensions');
     }
-    
+
     public function install()
-    {   
+    {
         $this->registerPackageVendorAutoload();
         $installationManager = new InstallationManager($this->app);
         $installationManager->installComponents();
         $pkg = parent::install();
-        \Concrete\Core\Page\Single::add('/dashboard/system/doctrine_behavioral_extensions',$pkg);
+        \Concrete\Core\Page\Single::add('/dashboard/system/doctrine_behavioral_extensions', $pkg);
+        $this->installConfig();
     }
 
     public function on_start()
-    {   
+    {
         $this->registerPackageVendorAutoload();
         $listenerCtrl = new ListenerConroller($this->app, $this->getFileConfig());
         $listenerCtrl->registerDoctrineBehavioralExtensions();
     }
-    
+
     public function uninstall()
-    {   
+    {
         $this->registerPackageVendorAutoload();
         $installationManager = new InstallationManager($this->app);
         $installationManager->uninstallComponents();
         parent::uninstall();
     }
-     
+
     /**
      * Register the autoloading
      * Note: By wrapping the autoloader include call in a file_exists 
      * function, the package installation will also work by adding it 
      * to the projects composer.json
      */
-    protected function registerPackageVendorAutoload(){
-        if(file_exists($this->getPackagePath() . '/vendor/autoload.php')){
-            require $this->getPackagePath() . '/vendor/autoload.php';
+    protected function registerPackageVendorAutoload()
+    {
+        if (file_exists($this->getPackagePath().'/vendor/autoload.php')) {
+            require $this->getPackagePath().'/vendor/autoload.php';
         }
+    }
+
+    /**
+     * Set the package config
+     */
+    protected function installConfig()
+    {
+        $config = $this->getFileConfig();
+        $config->save('settings.sluggable.active', true);
+        $config->save('settings.sluggable.transliterator', ListenerConroller::DEFAULT_TRANSLITERATOR);
+        $config->save('settings.sluggable.transliteratorMethod', ListenerConroller::DEFAULT_TRANSLITERATOR_METHOD);
+
+        $config->save('settings.timestampable.active', true);
+        $config->save('settings.blameable.active', true);
+        $config->save('settings.sortable.active', true);
+        $config->save('settings.tree.active', true);
+        $config->save('settings.loggable.active', true);
+        $config->save('settings.translatable.active', true);
     }
 }
