@@ -19,15 +19,44 @@
         </div>
         <div class="form-group">
             <label class="control-label">
-                <?= t('Add a custom Transliterator class, which handles the conversion of special characters') ?>
+                <?= t('Add a custom Transliterator class, which handles the conversion of special characters for slugs') ?>
             </label>
             <?php
             $translieratorValue = $config->get('settings.sluggable.transliterator') ?
                     $config->get('settings.sluggable.transliterator') :
-                    '\Kaapiii\Doctrine\BehavioralExtensions\Translatable\Transliterator';
+                    \Kaapiii\Doctrine\BehavioralExtensions\ListenerConroller::DEFAULT_TRANSLITERATOR;
+            $translieratorMethodValue = $config->get('settings.sluggable.transliteratorMethod') ?
+                    $config->get('settings.sluggable.transliteratorMethod') :
+                    \Kaapiii\Doctrine\BehavioralExtensions\ListenerConroller::DEFAULT_TRANSLITERATOR_METHOD;
             ?>
-            <input class="form-control" type="text" name="custom_sluggable" value="<?= $translieratorValue; ?>"  />
-            
+            <input class="form-control" placeholder="<?= t('Transliterator class (Full namespace)');?>" type="text" name="transliterator" value="<?= $translieratorValue; ?>"  /><br>
+
+            <label class="control-label">
+                <?= t('Specify the method of the class inserted above, which will handle the string conversion.') ?>
+            </label>
+            <input class="form-control" placeholder="<?= t('Transliterator method');?>" type="text" name="transliterator_method" value="<?= $translieratorMethodValue; ?>"  />
+
+            <?php
+            $classExists = class_exists($config->get('settings.sluggable.transliterator'));
+            $methodExists = method_exists($config->get('settings.sluggable.transliterator'), $config->get('settings.sluggable.transliteratorMethod'));
+
+            if(!$classExists || !$methodExists):
+                ?>
+                <br>
+                <br>
+                <div class="alert alert-danger" role="alert">
+                    <?php
+                    if($classExists): ?>
+                    <?= t('Class "%s" does not exist.', $config->get('settings.sluggable.transliterator'));?>
+                    <?php elseif(!$methodExists): ?>
+                    <?= t('The method "%s" does not exist in the class "%s".', $config->get('settings.sluggable.transliteratorMethod'), $config->get('settings.sluggable.transliterator'));?>
+                    <?php endif; ?>
+                    <br>
+                    <br>
+                    <?= t('The Sluggable extension will fall back to the default Transliterator.'); ?>
+                </div>
+            <?php endif;?>
+
             <?php 
             if(array_key_exists('SluggableListener', $listenersPerBehavoir) && count($listenersPerBehavoir['SluggableListener']) > 1){
                 $eventListener = $listenersPerBehavoir['SluggableListener'];

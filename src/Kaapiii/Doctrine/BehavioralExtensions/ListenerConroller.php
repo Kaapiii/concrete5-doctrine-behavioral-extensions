@@ -28,7 +28,10 @@ use Gedmo\Timestampable\TimestampableListener;
  */
 class ListenerConroller implements ApplicationAwareInterface
 {
-    
+
+    const DEFAULT_TRANSLITERATOR = '\Kaapiii\Doctrine\BehavioralExtensions\Translatable\Transliterator';
+    const DEFAULT_TRANSLITERATOR_METHOD = 'replaceSecialSigns';
+
     /**
      * @var $app
      */
@@ -125,10 +128,10 @@ class ListenerConroller implements ApplicationAwareInterface
             $sluggableListener = new SluggableListener();
             $sluggableListener->setAnnotationReader($this->cachedAnnotationReader);
             // Register custom Sluggifiers (Replace Special Characters)
-            if ($this->config->get('settings.sluggable.transliterator')) {
-                $callable = $this->config->get('settings.sluggable.transliterator');
+            if (class_exists($this->config->get('settings.sluggable.transliterator')) && method_exists($this->config->get('settings.sluggable.transliterator'), $this->config->get('settings.sluggable.transliteratorMethod'))) {
+                $callable = array($this->config->get('settings.sluggable.transliterator'),$this->config->get('settings.sluggable.transliteratorMethod'));
             } else {
-                $callable = array('\Kaapiii\Doctrine\BehavioralExtensions\Translatable\Transliterator', 'replaceSecialSigns');
+                $callable = array(self::DEFAULT_TRANSLITERATOR, self::DEFAULT_TRANSLITERATOR_METHOD);
             }
 
             $sluggableListener->setTransliterator($callable);

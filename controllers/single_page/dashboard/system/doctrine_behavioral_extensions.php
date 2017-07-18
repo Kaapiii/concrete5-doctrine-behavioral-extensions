@@ -69,6 +69,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
             if ($this->isPost()) {
                 $isSluggableActive = $this->post('eneable_sluggable') == 1 ? true : false;
                 $transliterator = $this->post('transliterator');
+                $transliteratorMethod = $this->post('transliterator_method');
                 
                 $isTimestampableActrive = $this->post('eneable_timestampable') == 1 ? true : false;
                 $isBlameableActive = $this->post('eneable_blameable') == 1 ? true : false;
@@ -81,6 +82,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
                 
                 $config->save('settings.sluggable.active', $isSluggableActive);
                 $config->save('settings.sluggable.transliterator', $transliterator);
+                $config->save('settings.sluggable.transliteratorMethod', $transliteratorMethod);
                 
                 $config->save('settings.timestampable.active', $isTimestampableActrive);
                 $config->save('settings.blameable.active', $isBlameableActive);
