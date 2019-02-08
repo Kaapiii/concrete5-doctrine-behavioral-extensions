@@ -38,6 +38,11 @@ class ListenerConroller implements ApplicationAwareInterface
     protected $app;
 
     /**
+     * @var \Doctrine\ORM\EntityManager
+     */
+    private $em;
+
+    /**
      * @var \Doctrine\Common\EventManager
      */
     protected $evm;
@@ -182,14 +187,26 @@ class ListenerConroller implements ApplicationAwareInterface
     }
 
     /**
+     * Get the site default locale
+     *
+     * @return mixed
+     */
+    protected function getDefaultLocale(){
+        /* @var $localeService \Concrete\Core\Localization\Locale\Service */
+        $localeService = $this->app->make(Service::class, ['entityManager' => $this->em]);
+        $siteLocalEntity = $localeService->getDefaultLocale();
+        $defaultLocale = $siteLocalEntity->getLanguage();
+
+        return $defaultLocale;
+    }
+
+    /**
      * Register translatable listener
      */
     protected function registerTranslatable()
     {
         if ($this->config->get('settings.translatable.active')) {
-            $defaultSourceLocale = $this->getSiteConfig()->get('multilingual.default_source_locale'); // -> example "de_DE"
-
-            $defaultLocale = substr($defaultSourceLocale, 0, 2);
+            $defaultLocale = $this->getDefaultLocale();
             if (!empty($defaultLocale)) {
                 // Translatable
                 $translatableListener = new TranslatableListener();
@@ -205,6 +222,7 @@ class ListenerConroller implements ApplicationAwareInterface
                     // Get default section
                     $msd = Section::getDefaultSection();
                     $requestLocale = Request::request('locale');
+
                     if (is_object($msd)) {
                         $translatableListener->setTranslatableLocale($defaultLocale);
                     } elseif (!empty($requestLocale)) {
@@ -215,6 +233,7 @@ class ListenerConroller implements ApplicationAwareInterface
                         $translatableListener->setTranslatableLocale($fallbackLanguage);
                     }
                 }
+
                 $this->evm->addEventSubscriber($translatableListener);
             }
         }
