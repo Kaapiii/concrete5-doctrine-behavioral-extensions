@@ -21,7 +21,7 @@ class Transliterator {
      * 
      * @return string
      */
-    public function replaceSecialSigns($slug, $separator = '-'){
+    public function replaceSpecialSigns($slug, $separator = '-'){
         $specialCharactersPairs = array(
                 // German special characters
                 'ä'=>'ae', 'ö' => 'oe', 'ü' => 'ue', 'Ä' => 'Ae', 'Ö' => 'oe', 'Ü' => 'Üe', 'ß' => 'ss',

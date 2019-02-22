@@ -10,8 +10,6 @@ use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Application\Application;
 use Concrete\Core\Config\Repository\Liaison;
 use Concrete\Core\Localization\Locale\Service;
-use Doctrine\Common\Annotations\Reader;
-use Doctrine\Common\EventManager;
 use Gedmo\DoctrineExtensions;
 use Gedmo\Blameable\BlameableListener;
 use Gedmo\Loggable\LoggableListener;
@@ -31,7 +29,7 @@ class ListenerConroller implements ApplicationAwareInterface
 {
 
     const DEFAULT_TRANSLITERATOR = '\Kaapiii\Doctrine\BehavioralExtensions\Translatable\Transliterator';
-    const DEFAULT_TRANSLITERATOR_METHOD = 'replaceSecialSigns';
+    const DEFAULT_TRANSLITERATOR_METHOD = 'replaceSpecialSigns';
 
     /**
      * @var $app
@@ -51,7 +49,7 @@ class ListenerConroller implements ApplicationAwareInterface
     /**
      * @var \Doctrine\Common\Annotations\CachedReader
      */
-    protected $cachedAnnotaionReader;
+    protected $cachedAnnotationReader;
 
     /**
      * @var \Concrete\Core\Config\Repository\Liaison
@@ -90,8 +88,7 @@ class ListenerConroller implements ApplicationAwareInterface
     /**
      * Register Doctrine2 behavioral extensions
      *
-     * @param EventManager $evm
-     * @param Reader $cachedAnnotationReader
+     * @throws \Doctrine\ORM\ORMException
      */
     public function registerDoctrineBehavioralExtensions()
     {
@@ -111,10 +108,9 @@ class ListenerConroller implements ApplicationAwareInterface
 
         // Needs to be triggered after the locale was loaded.
         $class = $this;
-        \Events::addListener('on_locale_load', function($event) use ($class){
+        \Events::addListener('on_locale_load', function() use ($class){
             $class->registerTranslatable();
         });
-
     }
 
     /**
@@ -274,5 +270,4 @@ class ListenerConroller implements ApplicationAwareInterface
         $site = $this->app->make('site')->getActiveSiteForEditing();
         return $site->getConfigRepository();
     }
-
 }
