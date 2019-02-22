@@ -107,8 +107,14 @@ class ListenerConroller implements ApplicationAwareInterface
         $this->registerTree();
         $this->registerBlamable();
         $this->registerTimestampable();
-        $this->registerTranslatable();
         $this->registerLoggable();
+
+        // Needs to be triggered after the locale was loaded.
+        $class = $this;
+        \Events::addListener('on_locale_load', function($event) use ($class){
+            $class->registerTranslatable();
+        });
+
     }
 
     /**
