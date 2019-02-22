@@ -9,6 +9,7 @@ use Concrete\Core\Http\Request;
 use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Application\Application;
 use Concrete\Core\Config\Repository\Liaison;
+use Concrete\Core\Localization\Locale\Service;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventManager;
 use Gedmo\DoctrineExtensions;
@@ -48,12 +49,12 @@ class ListenerConroller implements ApplicationAwareInterface
     protected $evm;
 
     /**
-     * @var \Doctrine\Common\Annotations\CachedReader 
+     * @var \Doctrine\Common\Annotations\CachedReader
      */
     protected $cachedAnnotaionReader;
 
     /**
-     * @var \Concrete\Core\Config\Repository\Liaison 
+     * @var \Concrete\Core\Config\Repository\Liaison
      */
     protected $config;
 
@@ -65,7 +66,7 @@ class ListenerConroller implements ApplicationAwareInterface
 
     /**
      * Constructor
-     * 
+     *
      * @param ApplicationAwareInterface $app
      * @param Liaison $config
      */
@@ -75,17 +76,17 @@ class ListenerConroller implements ApplicationAwareInterface
         $this->config = $config;
         $this->user = new User();
     }
-    
+
     /**
      * Set application
-     * 
+     *
      * @param Application $application
      */
     public function setApplication(Application $application)
     {
         $this->app = $application;
     }
-    
+
     /**
      * Register Doctrine2 behavioral extensions
      *
@@ -100,7 +101,7 @@ class ListenerConroller implements ApplicationAwareInterface
         $driverChain = $this->em->getConfiguration()->getMetadataDriverImpl();
 
         DoctrineExtensions::registerMappingIntoDriverChainORM($driverChain, $this->cachedAnnotationReader);
-        
+
         $this->registerSortable();
         $this->registerSluggable();
         $this->registerTree();
@@ -259,7 +260,7 @@ class ListenerConroller implements ApplicationAwareInterface
 
     /**
      * Return the site config repository
-     * 
+     *
      * @return \Illuminate\Config\Repository
      */
     protected function getSiteConfig()
