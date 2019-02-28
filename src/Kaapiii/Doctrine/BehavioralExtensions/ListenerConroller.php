@@ -106,7 +106,17 @@ class ListenerConroller implements ApplicationAwareInterface
         $this->registerTimestampable();
         $this->registerLoggable();
 
-        // Needs to be triggered after the locale was loaded.
+        // Register the listener the first time. This prevents an Exception being thrown for custom registered routes
+        // (like custom API routes to custom entities) that don't trigger the 'on_locale_load' event, but triggers
+        // somewhere in the request life cycle a query which uses the translatable mapping annotations.
+        //
+        // Example: Route "api/v1/{language}/products/" fetches all products. This route will never
+        // trigger the 'on_locale_load' event in concrete, but in order to get all product in a specific language
+        // the translatable listener need to be loaded.
+        $this->registerTranslatable();
+
+        // Needs to be triggered after the locale was loaded a second time so the listener is configured with the correct
+        // language
         $class = $this;
         \Events::addListener('on_locale_load', function() use ($class){
             $class->registerTranslatable();

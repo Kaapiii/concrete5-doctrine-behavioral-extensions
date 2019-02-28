@@ -18,7 +18,7 @@ class Controller extends Package
 
     protected $pkgHandle          = 'concrete5_doctrine_behavioral_extensions';
     protected $appVersionRequired = '8.0.0';
-    protected $pkgVersion         = '1.0.1';
+    protected $pkgVersion         = '1.0.2';
 
     /**
      * Register the custom namespace
