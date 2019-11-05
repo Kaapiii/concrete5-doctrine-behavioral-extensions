@@ -3,6 +3,8 @@
 namespace Concrete\Package\Concrete5DoctrineBehavioralExtensions\Controller\SinglePage\Dashboard\System;
 
 use Concrete\Core\Package\Package;
+use Concrete\Core\Package\PackageService;
+use Concrete\Core\Routing\Redirect;
 use TaskPermission;
 
 /**
@@ -14,7 +16,7 @@ use TaskPermission;
 class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\DashboardSitePageController{
     
     /**
-     * @var Concrete\Core\Package\Package 
+     * @var \Concrete\Core\Package\Package
      */
     private $package;
     
@@ -26,7 +28,12 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
      */
     public function __construct(\Concrete\Core\Page\Page $c) {
         parent::__construct($c);
-        $this->package = Package::getByHandle('concrete5_doctrine_behavioral_extensions');
+    }
+
+    public function on_start()
+    {
+        parent::on_start();
+        $this->package = $this->app->make(PackageService::class)->getClass('concrete5_doctrine_behavioral_extensions');
     }
     
     /**
@@ -39,8 +46,8 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
         if (!$canInstallPackages){
             $this->error->add(t('You do not have permission to edit this package settings. In order to alter the settings you need to have permission to install add-ons.'));
         }
-        
-        $package = Package::getByHandle('concrete5_doctrine_behavioral_extensions');
+
+        $package = $this->app->make(PackageService::class)->getClass('concrete5_doctrine_behavioral_extensions');
         $config = $package->getFileConfig();
         
         $this->set('config', $config);
@@ -66,7 +73,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
     public function updateSettings(){
         
         if ($this->token->validate('behavioral')) {
-            if ($this->isPost()) {
+            if ($this->getRequest()->isPost()) {
                 $isSluggableActive = $this->post('eneable_sluggable') == 1 ? true : false;
                 $transliterator = $this->post('transliterator');
                 $transliteratorMethod = $this->post('transliterator_method');
@@ -95,15 +102,18 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
         } else {
             $this->set('error', array($this->token->getErrorMessage()));
         }
-        $this->redirect('/dashboard/system/doctrine_behavioral_extensions');
+        Redirect::to('/dashboard/system/doctrine_behavioral_extensions')->send();
     }
     
     /**
      * Get ORM listeners for each registerd behavior
      * 
      * @param \Doctrine\Common\EventManager $evm
+     *
      * @return array    contains all registerd behavoirs and their Doctrine2
      *                  ORM listeners
+     *
+     * @throws \ReflectionException
      */
     public function getListeners($evm){
         $listeners = $evm->getListeners();
