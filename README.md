@@ -1,4 +1,3 @@
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42/mini.png)](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42)
 [![Latest Stable Version](https://poser.pugx.org/kaapiii/concrete5_doctrine_behavioral_extensions/v)](//packagist.org/packages/kaapiii/concrete5_doctrine_behavioral_extensions)
 [![Total Downloads](https://poser.pugx.org/kaapiii/concrete5_doctrine_behavioral_extensions/downloads)](//packagist.org/packages/kaapiii/concrete5_doctrine_behavioral_extensions)
 [![License](https://poser.pugx.org/kaapiii/concrete5_doctrine_behavioral_extensions/license)](//packagist.org/packages/kaapiii/concrete5_doctrine_behavioral_extensions)
