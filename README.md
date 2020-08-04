@@ -1,37 +1,55 @@
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42/mini.png)](https://insight.sensiolabs.com/projects/bd8b1a54-3386-4d04-b5fa-c00e315ebe42)
+[![Latest Stable Version](https://poser.pugx.org/kaapiii/concrete5_doctrine_behavioral_extensions/v)](//packagist.org/packages/kaapiii/concrete5_doctrine_behavioral_extensions)
+[![Total Downloads](https://poser.pugx.org/kaapiii/concrete5_doctrine_behavioral_extensions/downloads)](//packagist.org/packages/kaapiii/concrete5_doctrine_behavioral_extensions)
+[![License](https://poser.pugx.org/kaapiii/concrete5_doctrine_behavioral_extensions/license)](//packagist.org/packages/kaapiii/concrete5_doctrine_behavioral_extensions)
 
-Concrete5 package for v8 - Package adds Doctrine2 behavioral extensions to concrete5
-======
+# Doctrine2 behavioral extensions for concrete5 v8
 
-Installation
-------------------
+Package add the [doctrine behavioral extensions](https://github.com/Atlantic18/DoctrineExtensions) to concrete5 version >= 8.0.0
 
-### Install the package manually
+## Installation
 
-1. Download the zip and the folder **concrete5_doctrine_behavioral_extensions-xxx** to {root}/packages
-2. Rename the folder to **concrete5_doctrine_behavioral_extensions**
-2. Use [Composer](https://getcomposer.org/) to install the third party dependencies
+```bash
+require kaapiii/concrete5_doctrine_behavioral_extensions
+```
 
-        composer install
+- Install the package in concrete5
+- Navigate to **System & Settings -> Doctrine Behavioral Extensions** to see and activate the available extensions.
 
-4. Install the package
-5. Navigate to **System & Settings -> Doctrine Behavioral Extensions** to see and activate the available extensions.
 
-#### Attention:
-If you decide to install the package manually, you should install all packages which depend on its functionality, after you first installed this package. The reason is, that concrete5 loads the active packages in the same order they were installed.
+## Usage
 
-### Install the package with the projects composer.json file
+**Update mapping information and entities** \
+Update your entities in your package with the desired behaviors. Here an example with yaml mapping files and the timestampable behavior. 
 
-1. Add the following line to line to the 'require' section of the concrete5 composer.json.
+```yaml
+---
+Kaapiii\Example\MyEntity:
+  type: entity
+  table: myentity
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    title:
+      type: string
+      length: 64
+    created:
+      type: date
+      gedmo:
+        timestampable:
+          on: create
+    updated:
+      type: datetime
+      gedmo:
+        timestampable:
+          on: update
+```
 
-        "kaapiii/concrete5_doctrine_behavioral_extensions": "^1.0"
+**Update your package** \
+Increase your concrete5 package version and update the package. Concrete5 will handle the upgarde of all the entities.
 
-2. Run the following command from the installation {root} folder
-
-        composer install
-
-3. Install the package
-4. Navigate to **System & Settings -> Doctrine Behavioral Extensions** to see and activate the available extensions.
-
-#### Note:
-With this installation method, the installation order of the packages doesn't matter. All third party dependencies are installed in {root}/concrete/vendor and therefore loaded before the packages are initiated.
+## Documentation
+For more information, on how to use the behavioral extensions in your entities please consult [Atlantic18/DoctrineExtensions repository](https://github.com/Atlantic18/DoctrineExtensions)

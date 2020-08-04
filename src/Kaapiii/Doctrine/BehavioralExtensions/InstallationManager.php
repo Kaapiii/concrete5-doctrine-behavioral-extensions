@@ -2,18 +2,19 @@
 
 namespace Kaapiii\Doctrine\BehavioralExtensions;
 
-use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Application\Application;
+use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Database\DatabaseStructureManager;
 use Concrete\Core\Support\Facade\Config;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\CachedReader;
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
+use Doctrine\Common\Proxy\ProxyGenerator;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Tools\Setup;
-use Doctrine\Common\Proxy\ProxyGenerator;
 use Gedmo\DoctrineExtensions;
 
 /**
@@ -49,9 +50,11 @@ class InstallationManager implements ApplicationAwareInterface
     {
         $this->app = $application;
     }
-    
+
     /**
      * Install/create related components
+     *
+     * @throws ORMException
      */
     public function installComponents()
     {   
@@ -59,43 +62,47 @@ class InstallationManager implements ApplicationAwareInterface
         $this->installBehavioralTables($em);
         $this->generateProxyClasses($em);
     }
-     
+
     /**
      * Uninstall related components
+     *
+     * @throws ORMException
      */
     public function uninstallComponents()
     {
         $em = $this->getEntityManagerForInstallation();
         $this->deleteProxies($em);
     }
-    
+
     /**
      * Get EntityManager which contains only the gedmo mapping information
-     * 
-     * @return \Doctrine\ORM\EntityManager
+     *
+     * @return EntityManager
+     *
+     * @throws ORMException
      */
     protected function getEntityManagerForInstallation()
     {
         // Create new temporary EntityManager which contains only the
-        // mapping informations of the Doctrine Behavioral Extension. 
+        // mapping information of the Doctrine Behavioral Extension.
         // It's used only for the table creation during the package installation.
         $annotationReader = new AnnotationReader();
-        $cachedAnnotationReader = new CachedReader($annotationReader, new \Doctrine\Common\Cache\ArrayCache());
+        $cachedAnnotationReader = new CachedReader($annotationReader, new ArrayCache());
         $driverChain = new MappingDriverChain();
         DoctrineExtensions::registerMappingIntoDriverChainORM($driverChain, $cachedAnnotationReader);
 
         $connection = $this->app->make('Concrete\Core\Database\Connection\Connection');
         $config = Setup::createConfiguration(
-                        Config::get('concrete.cache.doctrine_dev_mode'), Config::get('database.proxy_classes'), new ArrayCache()
+            Config::get('concrete.cache.doctrine_dev_mode'), Config::get('database.proxy_classes'), new ArrayCache()
         );
         $config->setMetadataDriverImpl($driverChain);
-        $em = EntityManager::create($connection, $config);
-        
-        return $em;
+        return EntityManager::create($connection, $config);
     }
 
     /**
      * Create tables according to the entity managers metadata
+     *
+     * @param EntityManagerInterface $em
      */
     protected function installBehavioralTables(EntityManagerInterface $em)
     {
@@ -106,21 +113,13 @@ class InstallationManager implements ApplicationAwareInterface
 
     /**
      * Generate proxies according to the entity managers metadata
-     * 
-     * @param \Doctrine\ORM\EntityManager $em
+     *
+     * @param EntityManagerInterface $em
      */
     protected function generateProxyClasses(EntityManagerInterface $em)
     {
         $metadata = $em->getMetadataFactory()->getAllMetadata();
         $em->getProxyFactory()->generateProxyClasses($metadata, $em->getConfiguration()->getProxyDir());
-    }
-
-    /**
-     * Delete related tables, if so was selected during the deinstallation
-     */
-    protected function deleteTables(EntityManagerInterface $em)
-    {
-        
     }
 
     /**

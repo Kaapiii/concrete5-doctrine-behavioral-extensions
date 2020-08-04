@@ -4,8 +4,13 @@ namespace Concrete\Package\Concrete5DoctrineBehavioralExtensions\Controller\Sing
 
 use Concrete\Core\Package\Package;
 use Concrete\Core\Package\PackageService;
+use Concrete\Core\Page\Controller\DashboardSitePageController;
+use Concrete\Core\Page\Page;
+use Concrete\Core\Permission\Key\Key;
 use Concrete\Core\Routing\Redirect;
-use TaskPermission;
+use Doctrine\Common\EventManager;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Behavioral settings controller
@@ -13,20 +18,19 @@ use TaskPermission;
  * @author Markus Liechti <markus@liechti.io>
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\DashboardSitePageController{
+class DoctrineBehavioralExtensions extends DashboardSitePageController{
     
     /**
-     * @var \Concrete\Core\Package\Package
+     * @var Package
      */
     private $package;
-    
-    
+
     /**
      * Constructor
      * 
-     * @param \Concrete\Core\Page\Page $c
+     * @param Page $c
      */
-    public function __construct(\Concrete\Core\Page\Page $c) {
+    public function __construct(Page $c) {
         parent::__construct($c);
     }
 
@@ -35,23 +39,25 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
         parent::on_start();
         $this->package = $this->app->make(PackageService::class)->getClass('concrete5_doctrine_behavioral_extensions');
     }
-    
+
     /**
      * Show settings page
      */
-    public function view(){
-        
-        $tp = new TaskPermission();
-        $canInstallPackages = $tp->canInstallPackages();
-        if (!$canInstallPackages){
+    public function view()
+    {
+        $canInstallPackages = true;
+
+        $key = Key::getByHandle('install_packages');
+        if (!$key->validate()) {
             $this->error->add(t('You do not have permission to edit this package settings. In order to alter the settings you need to have permission to install add-ons.'));
+            $canInstallPackages = false;
         }
 
         $package = $this->app->make(PackageService::class)->getClass('concrete5_doctrine_behavioral_extensions');
-        $config = $package->getFileConfig();
-        
+        $config = $package->getConfig();
+
         $this->set('config', $config);
-        
+
         $connection = $this->app->make('Concrete\Core\Database\Connection\Connection');
         $evm = $connection->getEventManager();
         
@@ -85,7 +91,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
                 $isLoggableActive = $this->post('eneable_loggable') == 1 ? true : false;
                 $isTranslatableActive = $this->post('eneable_translatable') == 1 ? true : false;
                 
-                $config = $this->package->getFileConfig();
+                $config = $this->package->getConfig();
                 
                 $config->save('settings.sluggable.active', $isSluggableActive);
                 $config->save('settings.sluggable.transliterator', $transliterator);
@@ -106,14 +112,14 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
     }
     
     /**
-     * Get ORM listeners for each registerd behavior
+     * Get ORM listeners for each registered behavior
      * 
-     * @param \Doctrine\Common\EventManager $evm
+     * @param EventManager $evm
      *
-     * @return array    contains all registerd behavoirs and their Doctrine2
+     * @return array    contains all registered behaviors and their Doctrine2
      *                  ORM listeners
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function getListeners($evm){
         $listeners = $evm->getListeners();
@@ -123,7 +129,7 @@ class DoctrineBehavioralExtensions extends \Concrete\Core\Page\Controller\Dashbo
         foreach($listeners as $event => $classes){
             if(count($classes)){
                 foreach($classes as $class){
-                    $reflection = new \ReflectionClass($class);
+                    $reflection = new ReflectionClass($class);
                     $className = $reflection->getShortName();
                     $listenersPerBehavior[$className][] = $event;
                 }

@@ -1,5 +1,6 @@
-/tests export-ignore
-/.gitattributes export-ignore
-/.gitignore export-ignore
-/LICENSE export-ignore
-/README.md export-ignore
+# Remove files from archives generated using "git archive"
+tests export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+LICENSE export-ignore
+README.md export-ignore

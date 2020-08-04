@@ -2,7 +2,7 @@
 
 namespace Kaapiii\Doctrine\BehavioralExtensions\Translatable;
 
-use \Gedmo\Sluggable\Util\Urlizer;
+use Gedmo\Sluggable\Util\Urlizer;
 
 /**
  * Transliterator
@@ -13,7 +13,7 @@ use \Gedmo\Sluggable\Util\Urlizer;
 class Transliterator {
 
     /**
-     * Replace all specail characters from German, French and some other languages
+     * Replace all special characters from German, French and some other languages
      * Note: the default transliterator ignores most of the french special characters
      * 
      * @param string $slug

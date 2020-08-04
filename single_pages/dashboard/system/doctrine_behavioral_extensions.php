@@ -1,4 +1,6 @@
-<?php defined('C5_EXECUTE') or die("Access Denied."); ?>
+<?php use Kaapiii\Doctrine\BehavioralExtensions\ListenerController;
+
+defined('C5_EXECUTE') or die("Access Denied."); ?>
 
 <?php if($canInstallPackages): ?>
 <form method="post" class="ccm-dashboard-content-form" action="<?= $controller->action('updateSettings') ?>">
@@ -23,11 +25,11 @@
             </label>
             <?php
             $translieratorValue = $config->get('settings.sluggable.transliterator') ?
-                    $config->get('settings.sluggable.transliterator') :
-                    \Kaapiii\Doctrine\BehavioralExtensions\ListenerConroller::DEFAULT_TRANSLITERATOR;
+                $config->get('settings.sluggable.transliterator') :
+                ListenerController::DEFAULT_TRANSLITERATOR;
             $translieratorMethodValue = $config->get('settings.sluggable.transliteratorMethod') ?
-                    $config->get('settings.sluggable.transliteratorMethod') :
-                    \Kaapiii\Doctrine\BehavioralExtensions\ListenerConroller::DEFAULT_TRANSLITERATOR_METHOD;
+                $config->get('settings.sluggable.transliteratorMethod') :
+                ListenerController::DEFAULT_TRANSLITERATOR_METHOD;
             ?>
             <input class="form-control" placeholder="<?= t('Transliterator class (Full namespace)');?>" type="text" name="transliterator" value="<?= $translieratorValue; ?>"  /><br>
 

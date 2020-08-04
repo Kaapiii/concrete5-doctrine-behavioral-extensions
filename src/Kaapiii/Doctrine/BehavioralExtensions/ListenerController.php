@@ -10,6 +10,11 @@ use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Application\Application;
 use Concrete\Core\Config\Repository\Liaison;
 use Concrete\Core\Localization\Locale\Service;
+use Doctrine\Common\Annotations\CachedReader;
+use Doctrine\Common\EventManager;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\ORMException;
+use Events;
 use Gedmo\DoctrineExtensions;
 use Gedmo\Blameable\BlameableListener;
 use Gedmo\Loggable\LoggableListener;
@@ -18,14 +23,15 @@ use Gedmo\Sortable\SortableListener;
 use Gedmo\Translatable\TranslatableListener;
 use Gedmo\Tree\TreeListener;
 use Gedmo\Timestampable\TimestampableListener;
+use Illuminate\Config\Repository;
 
 /**
- * ListenerConroller
+ * ListenerController
  *
  * @author Markus Liechti <markus@liechti.io>
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-class ListenerConroller implements ApplicationAwareInterface
+class ListenerController implements ApplicationAwareInterface
 {
 
     const DEFAULT_TRANSLITERATOR = '\Kaapiii\Doctrine\BehavioralExtensions\Translatable\Transliterator';
@@ -37,35 +43,35 @@ class ListenerConroller implements ApplicationAwareInterface
     protected $app;
 
     /**
-     * @var \Doctrine\ORM\EntityManager
+     * @var EntityManager
      */
     private $em;
 
     /**
-     * @var \Doctrine\Common\EventManager
+     * @var EventManager
      */
     protected $evm;
 
     /**
-     * @var \Doctrine\Common\Annotations\CachedReader
+     * @var CachedReader
      */
     protected $cachedAnnotationReader;
 
     /**
-     * @var \Concrete\Core\Config\Repository\Liaison
+     * @var Liaison
      */
     protected $config;
 
     /**
      *
-     * @var \Concrete\Core\User\User
+     * @var User
      */
     protected $user;
 
     /**
      * Constructor
      *
-     * @param ApplicationAwareInterface $app
+     * @param Application $app
      * @param Liaison $config
      */
     public function __construct(Application $app, Liaison $config)
@@ -88,7 +94,7 @@ class ListenerConroller implements ApplicationAwareInterface
     /**
      * Register Doctrine2 behavioral extensions
      *
-     * @throws \Doctrine\ORM\ORMException
+     * @throws ORMException
      */
     public function registerDoctrineBehavioralExtensions()
     {
@@ -118,7 +124,7 @@ class ListenerConroller implements ApplicationAwareInterface
         // Needs to be triggered after the locale was loaded a second time so the listener is configured with the correct
         // language
         $class = $this;
-        \Events::addListener('on_locale_load', function() use ($class){
+        Events::addListener('on_locale_load', function() use ($class){
             $class->registerTranslatable();
         });
     }
@@ -145,7 +151,7 @@ class ListenerConroller implements ApplicationAwareInterface
         if ($this->config->get('settings.sluggable.active')) {
             $sluggableListener = new SluggableListener();
             $sluggableListener->setAnnotationReader($this->cachedAnnotationReader);
-            // Register custom Sluggifiers (Replace Special Characters)
+            // Register custom Sluggifiers (replace special characters)
             if (class_exists($this->config->get('settings.sluggable.transliterator')) && method_exists($this->config->get('settings.sluggable.transliterator'), $this->config->get('settings.sluggable.transliteratorMethod'))) {
                 $callable = array($this->config->get('settings.sluggable.transliterator'),$this->config->get('settings.sluggable.transliteratorMethod'));
             } else {
@@ -205,12 +211,10 @@ class ListenerConroller implements ApplicationAwareInterface
      * @return mixed
      */
     protected function getDefaultLocale(){
-        /* @var $localeService \Concrete\Core\Localization\Locale\Service */
+        /* @var $localeService Service */
         $localeService = $this->app->make(Service::class, ['entityManager' => $this->em]);
         $siteLocalEntity = $localeService->getDefaultLocale();
-        $defaultLocale = $siteLocalEntity->getLanguage();
-
-        return $defaultLocale;
+        return $siteLocalEntity->getLanguage();
     }
 
     /**
@@ -273,7 +277,7 @@ class ListenerConroller implements ApplicationAwareInterface
     /**
      * Return the site config repository
      *
-     * @return \Illuminate\Config\Repository
+     * @return Repository
      */
     protected function getSiteConfig()
     {
