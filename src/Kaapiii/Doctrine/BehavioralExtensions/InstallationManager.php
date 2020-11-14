@@ -5,6 +5,7 @@ namespace Kaapiii\Doctrine\BehavioralExtensions;
 use Concrete\Core\Application\Application;
 use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Database\DatabaseStructureManager;
+use Concrete\Core\Database\Connection\Connection;
 use Concrete\Core\Support\Facade\Config;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\CachedReader;
@@ -91,7 +92,7 @@ class InstallationManager implements ApplicationAwareInterface
         $driverChain = new MappingDriverChain();
         DoctrineExtensions::registerMappingIntoDriverChainORM($driverChain, $cachedAnnotationReader);
 
-        $connection = $this->app->make('Concrete\Core\Database\Connection\Connection');
+        $connection = $this->app->make(Connection::class);
         $config = Setup::createConfiguration(
             Config::get('concrete.cache.doctrine_dev_mode'), Config::get('database.proxy_classes'), new ArrayCache()
         );

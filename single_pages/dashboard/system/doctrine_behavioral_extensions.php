@@ -1,4 +1,5 @@
-<?php use Kaapiii\Doctrine\BehavioralExtensions\ListenerController;
+<?php use Gedmo\SoftDeleteable\SoftDeleteableListener;
+use Kaapiii\Doctrine\BehavioralExtensions\ListenerController;
 
 defined('C5_EXECUTE') or die("Access Denied."); ?>
 
@@ -14,7 +15,7 @@ defined('C5_EXECUTE') or die("Access Denied."); ?>
         <div class="form-group">
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" name="eneable_sluggable" value="1" <?= $config->get('settings.sluggable.active') ? 'checked' : ''; ?> />
+                    <input type="checkbox" name="enable_sluggable" value="1" <?= $config->get('settings.sluggable.active') ? 'checked' : ''; ?> />
                     <?= t('Activate') ?>
                 </label> 
             </div>
@@ -69,14 +70,13 @@ defined('C5_EXECUTE') or die("Access Denied."); ?>
     </fieldset>
     <fieldset>
         <legend>
-            <?= t('Timestampable') ?> 
-            <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
+            <?= t('Timestampable') ?>
         </legend>
         <div class="form-group">
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" name="eneable_timestampable" value="1" <?= $config->get('settings.timestampable.active') ? 'checked' : ''; ?> />
-                    <?= t('Activate') ?>
+                    <input type="checkbox" name="enable_timestampable" value="1" <?= $config->get('settings.timestampable.active') ? 'checked' : ''; ?> />
+                    <?= t('Activate') ?> <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
                 </label>
             </div>
             <?php 
@@ -89,14 +89,13 @@ defined('C5_EXECUTE') or die("Access Denied."); ?>
     </fieldset>
     <fieldset>
         <legend>
-            <?= t('Blameable') ?> 
-            <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
+            <?= t('Blameable') ?>
         </legend>
         <div class="form-group">
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" name="eneable_blameable" value="1" <?= $config->get('settings.blameable.active') ? 'checked' : ''; ?> />
-                    <?= t('Activate') ?>
+                    <input type="checkbox" name="enable_blameable" value="1" <?= $config->get('settings.blameable.active') ? 'checked' : ''; ?> />
+                    <?= t('Activate') ?> <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
                 </label>
             </div>
             <?php 
@@ -109,14 +108,13 @@ defined('C5_EXECUTE') or die("Access Denied."); ?>
     </fieldset>
     <fieldset>
         <legend>
-            <?= t('Sortable') ?> 
-            <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
+            <?= t('Sortable') ?>
         </legend>
         <div class="form-group">
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" name="eneable_sortable" value="1" <?= $config->get('settings.sortable.active') ? 'checked' : ''; ?> />
-                    <?= t('Activate') ?>
+                    <input type="checkbox" name="enable_sortable" value="1" <?= $config->get('settings.sortable.active') ? 'checked' : ''; ?> />
+                    <?= t('Activate') ?> <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
                 </label>
             </div>
             <?php 
@@ -129,14 +127,13 @@ defined('C5_EXECUTE') or die("Access Denied."); ?>
     </fieldset>
     <fieldset>
         <legend>
-            <?= t('Tree') ?> 
-            <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
+            <?= t('Tree') ?>
         </legend>
         <div class="form-group">
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" name="eneable_tree" value="1" <?= $config->get('settings.tree.active') ? 'checked' : ''; ?> />
-                    <?= t('Activate') ?>
+                    <input type="checkbox" name="enable_tree" value="1" <?= $config->get('settings.tree.active') ? 'checked' : ''; ?> />
+                    <?= t('Activate') ?> <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
                 </label>
             </div>
             <?php 
@@ -149,14 +146,13 @@ defined('C5_EXECUTE') or die("Access Denied."); ?>
     </fieldset>
     <fieldset>
         <legend>
-            <?= t('Loggable') ?> 
-            <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
+            <?= t('Loggable') ?>
         </legend>
         <div class="form-group">
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" name="eneable_loggable" value="1" <?= $config->get('settings.loggable.active') ? 'checked' : ''; ?> />
-                    <?= t('Activate') ?>
+                    <input type="checkbox" name="enable_loggable" value="1" <?= $config->get('settings.loggable.active') ? 'checked' : ''; ?> />
+                    <?= t('Activate') ?> <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Stores the output of blocks which support block caching') ?>"></i>
                 </label>
             </div>
             <?php
@@ -170,17 +166,17 @@ defined('C5_EXECUTE') or die("Access Denied."); ?>
     <fieldset>
         <legend>
             <?= t('Translatable') ?> 
-            <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Add translatable support to entities') ?>"></i>
+
         </legend>
         <div class="form-group">
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" name="eneable_translatable" value="1" <?= $config->get('settings.translatable.active') ? 'checked' : ''; ?> />
-                    <?= t('Activate') ?>
+                    <input type="checkbox" name="enable_translatable" value="1" <?= $config->get('settings.translatable.active') ? 'checked' : ''; ?> />
+                    <?= t('Activate') ?> <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Add translatable support to entities') ?>"></i>
                 </label>
             </div>
-            <?php 
-            
+            <?php
+
             // Information
             if(!$defaultLanguageFalse):?>
                 <div class="alert alert-danger" role="alert"><?= t('In order to use the Translatable behavior the default locale for the site has to be set. Please set the locale here:'); ?>   <?= t('Multilingual Settings'); ?></div>
@@ -188,6 +184,25 @@ defined('C5_EXECUTE') or die("Access Denied."); ?>
             // Show the registered ORM events for this event listener
             if(array_key_exists('TranslatableListener', $listenersPerBehavoir) && count($listenersPerBehavoir['TranslatableListener']) > 1){
                 $eventListener = $listenersPerBehavoir['TranslatableListener'];
+                require $ormEventsElementPath;
+            }
+            ?>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>
+            <?= t('SoftDeletable') ?>
+        </legend>
+        <div class="form-group">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="enable_softDeletable" value="1" <?= $config->get('settings.softDeletable.active') ? 'checked' : ''; ?> />
+                    <?= t('Activate') ?> <i class="fa fa-question-circle launch-tooltip" data-placement="right" title="<?= t('Add SoftDeletable support to entities') ?>"></i>
+                </label>
+            </div>
+            <?php
+            if(array_key_exists('SoftDeleteableListener', $listenersPerBehavoir) && count($listenersPerBehavoir['SoftDeleteableListener']) > 1){
+                $eventListener = $listenersPerBehavoir['SoftDeleteableListener'];
                 require $ormEventsElementPath;
             }
             ?>

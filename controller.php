@@ -32,7 +32,7 @@ class Controller extends Package
     /**
      * @var string
      */
-    protected $pkgVersion         = '1.1.0';
+    protected $pkgVersion         = '2.0.0';
 
     /**
      * Register the custom namespace
@@ -99,6 +99,13 @@ class Controller extends Package
         if (version_compare($version, '1.0.2', '>')) {
             $this->switchFromFileConfigToDbConfig();
         }
+
+        /**
+         * Only run if upgrading to version 2.0.0 from <=1.1.0
+         */
+        if (version_compare($version, '1.1.0', '>')) {
+            $this->updateActivateSoftDeletable();
+        }
     }
 
     /**
@@ -141,6 +148,7 @@ class Controller extends Package
         $config->save('settings.tree.active', true);
         $config->save('settings.loggable.active', true);
         $config->save('settings.translatable.active', true);
+        $config->save('settings.softDeletable.active', true);
     }
 
     /**
@@ -195,6 +203,12 @@ class Controller extends Package
         }
 
         $this->removeConfigFile();
+    }
+
+    public function updateActivateSoftDeletable()
+    {
+        $config = $this->getConfig();
+        $config->save('settings.softDeletable.active', 1);
     }
 
     /**

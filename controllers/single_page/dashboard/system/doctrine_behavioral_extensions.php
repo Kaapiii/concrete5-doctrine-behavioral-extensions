@@ -80,16 +80,17 @@ class DoctrineBehavioralExtensions extends DashboardSitePageController{
         
         if ($this->token->validate('behavioral')) {
             if ($this->getRequest()->isPost()) {
-                $isSluggableActive = $this->post('eneable_sluggable') == 1 ? true : false;
+                $isSluggableActive = $this->post('enable_sluggable') == 1 ? true : false;
                 $transliterator = $this->post('transliterator');
                 $transliteratorMethod = $this->post('transliterator_method');
                 
-                $isTimestampableActrive = $this->post('eneable_timestampable') == 1 ? true : false;
-                $isBlameableActive = $this->post('eneable_blameable') == 1 ? true : false;
-                $isSortableActive = $this->post('eneable_sortable') == 1 ? true : false;
-                $isTreeActive = $this->post('eneable_tree') == 1 ? true : false;
-                $isLoggableActive = $this->post('eneable_loggable') == 1 ? true : false;
-                $isTranslatableActive = $this->post('eneable_translatable') == 1 ? true : false;
+                $isTimestampableActrive = $this->post('enable_timestampable') == 1 ? true : false;
+                $isBlameableActive = $this->post('enable_blameable') == 1 ? true : false;
+                $isSortableActive = $this->post('enable_sortable') == 1 ? true : false;
+                $isTreeActive = $this->post('enable_tree') == 1 ? true : false;
+                $isLoggableActive = $this->post('enable_loggable') == 1 ? true : false;
+                $isTranslatableActive = $this->post('enable_translatable') == 1 ? true : false;
+                $isDeletableActive = $this->post('enable_softDeletable') == 1 ? true : false;
                 
                 $config = $this->package->getConfig();
                 
@@ -103,7 +104,8 @@ class DoctrineBehavioralExtensions extends DashboardSitePageController{
                 $config->save('settings.tree.active', $isTreeActive);
                 $config->save('settings.loggable.active', $isLoggableActive);
                 $config->save('settings.translatable.active', $isTranslatableActive);
-                
+                $config->save('settings.softDeletable.active', $isDeletableActive);
+
             }
         } else {
             $this->set('error', array($this->token->getErrorMessage()));

@@ -14,6 +14,6 @@
     },
     "require": {
         "composer/installers": "~1.0",
-        "gedmo/doctrine-extensions": "2.4.*"
+        "gedmo/doctrine-extensions": "3.*"
     }
 }

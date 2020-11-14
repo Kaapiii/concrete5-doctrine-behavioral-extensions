@@ -14,11 +14,12 @@ use Doctrine\Common\Annotations\CachedReader;
 use Doctrine\Common\EventManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMException;
-use Events;
 use Gedmo\DoctrineExtensions;
 use Gedmo\Blameable\BlameableListener;
 use Gedmo\Loggable\LoggableListener;
 use Gedmo\Sluggable\SluggableListener;
+use Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter;
+use Gedmo\SoftDeleteable\SoftDeleteableListener;
 use Gedmo\Sortable\SortableListener;
 use Gedmo\Translatable\TranslatableListener;
 use Gedmo\Tree\TreeListener;
@@ -26,7 +27,7 @@ use Gedmo\Timestampable\TimestampableListener;
 use Illuminate\Config\Repository;
 
 /**
- * ListenerController
+ * ListenerConroller
  *
  * @author Markus Liechti <markus@liechti.io>
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
@@ -98,7 +99,7 @@ class ListenerController implements ApplicationAwareInterface
      */
     public function registerDoctrineBehavioralExtensions()
     {
-        $this->em = $this->app->make('Doctrine\ORM\EntityManager');
+        $this->em = $this->app->make(EntityManager::class);
         $this->evm = $this->em->getEventManager();
         $this->cachedAnnotationReader = $this->app->make('orm/cachedAnnotationReader');
         $driverChain = $this->em->getConfiguration()->getMetadataDriverImpl();
@@ -111,6 +112,7 @@ class ListenerController implements ApplicationAwareInterface
         $this->registerBlamable();
         $this->registerTimestampable();
         $this->registerLoggable();
+        $this->registerSoftDeletable();
 
         // Register the listener the first time. This prevents an Exception being thrown for custom registered routes
         // (like custom API routes to custom entities) that don't trigger the 'on_locale_load' event, but triggers
@@ -124,7 +126,7 @@ class ListenerController implements ApplicationAwareInterface
         // Needs to be triggered after the locale was loaded a second time so the listener is configured with the correct
         // language
         $class = $this;
-        Events::addListener('on_locale_load', function() use ($class){
+        \Events::addListener('on_locale_load', function() use ($class){
             $class->registerTranslatable();
         });
     }
@@ -151,7 +153,7 @@ class ListenerController implements ApplicationAwareInterface
         if ($this->config->get('settings.sluggable.active')) {
             $sluggableListener = new SluggableListener();
             $sluggableListener->setAnnotationReader($this->cachedAnnotationReader);
-            // Register custom Sluggifiers (replace special characters)
+            // Register custom Sluggifiers (Replace Special Characters)
             if (class_exists($this->config->get('settings.sluggable.transliterator')) && method_exists($this->config->get('settings.sluggable.transliterator'), $this->config->get('settings.sluggable.transliteratorMethod'))) {
                 $callable = array($this->config->get('settings.sluggable.transliterator'),$this->config->get('settings.sluggable.transliteratorMethod'));
             } else {
@@ -263,7 +265,7 @@ class ListenerController implements ApplicationAwareInterface
     {
         // Loggable
         if ($this->config->get('settings.loggable.active')) {
-            $loggableListener = new LoggableListener;
+            $loggableListener = new LoggableListener();
             $loggableListener->setAnnotationReader($this->cachedAnnotationReader);
             if ($this->user) {
                 // if not the user is not logged in, a empty user object is retured.
@@ -275,6 +277,24 @@ class ListenerController implements ApplicationAwareInterface
     }
 
     /**
+     * Register SoftDeletable filter
+     */
+    protected function registerSoftDeletable()
+    {
+        if ($this->config->get('settings.softDeletable.active')) {
+
+            // Event though the docs do not mention it, the event listener needs to be registered to the event manager
+            $softDeleteableListener = new SoftDeleteableListener();
+            $this->evm->addEventSubscriber($softDeleteableListener);
+
+            // Register soft deletable filter
+            $this->em->getConfiguration()->addFilter('soft-deleteable', SoftDeleteableFilter::class);
+            // Activate the soft deletable filter by default
+            $this->em->getFilters()->enable('soft-deleteable');
+        }
+    }
+
+        /**
      * Return the site config repository
      *
      * @return Repository
