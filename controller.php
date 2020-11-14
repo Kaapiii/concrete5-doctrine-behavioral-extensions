@@ -27,7 +27,7 @@ class Controller extends Package
     /**
      * @var string
      */
-    protected $appVersionRequired = '8.0.0';
+    protected $appVersionRequired = '8.5.0';
 
     /**
      * @var string
